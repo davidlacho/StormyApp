@@ -14,8 +14,12 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
+
+  private CurrentWeather currentWeather;
 
   public static final String TAG = MainActivity.class.getSimpleName();
 
@@ -50,9 +54,12 @@ public class MainActivity extends AppCompatActivity {
       @Override
       public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
         try {
-          Log.v(TAG, response.body().string());
 
           if (response.isSuccessful()) {
+            String jsonData =  response.body().string();
+            currentWeather = getCurrentDetails(jsonData);
+            Log.v(TAG, jsonData);
+
           }
           else {
             alertUserAboutError();
@@ -60,12 +67,30 @@ public class MainActivity extends AppCompatActivity {
         }
         catch (IOException e) {
           Log.e(TAG, getString(R.string.IO_exception_message), e);
+        } catch (JSONException e) {
+          Log.e(TAG, getString(R.string.JSON_exception_message), e);
         }
       }
     });
     } else {
       Toast.makeText(this, getString(R.string.network_unavailable_message), Toast.LENGTH_LONG).show();
     }
+  }
+
+  private CurrentWeather getCurrentDetails(String jsonData) throws JSONException {
+    CurrentWeather currentWeather = new CurrentWeather();
+    JSONObject forecast = new JSONObject(jsonData);
+    String timezone = forecast.getString("timezone");
+    JSONObject currently = forecast.getJSONObject("currently");
+
+    currentWeather.setHumidity(currently.getDouble("humidity"));
+    currentWeather.setTime(currently.getLong("time"));
+    currentWeather.setIcon(currently.getString("icon"));
+    currentWeather.setLocationLabel("Somewhere");
+    currentWeather.setPrecipChance(currently.getDouble("precipProbability"));
+    currentWeather.setSummary(currently.getString("summary"));
+    currentWeather.setTemperature(currently.getDouble("temperature"));
+    return currentWeather;
   }
 
 
