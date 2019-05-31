@@ -1,8 +1,12 @@
 package com.davidlacho.stormy;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 import java.io.IOException;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -31,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
         + ","
         + longitude;
 
+    if (isNetworkAvailable()){
+
     OkHttpClient client = new OkHttpClient();
 
     Request request = new Request.Builder().url(forecastURL).build();
@@ -45,13 +51,34 @@ public class MainActivity extends AppCompatActivity {
       public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
         try {
           Log.v(TAG, response.body().string());
+
+          if (response.isSuccessful()) {
+          }
+          else {
+            alertUserAboutError();
+          }
         }
         catch (IOException e) {
-          Log.e(TAG, "IO Exception caught: ", e);
+          Log.e(TAG, getString(R.string.IO_exception_message), e);
         }
       }
     });
+    } else {
+      Toast.makeText(this, getString(R.string.network_unavailable_message), Toast.LENGTH_LONG).show();
+    }
+  }
 
+
+  private boolean isNetworkAvailable() {
+    ConnectivityManager manager =
+        (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+    NetworkInfo networkInfo = manager.getActiveNetworkInfo();
+    return networkInfo != null && networkInfo.isConnected();
+  }
+
+  private void alertUserAboutError() {
+    AlertDialogFragment dialog = new AlertDialogFragment();
+    dialog.show(getSupportFragmentManager(), "error_dialog");
   }
 
 }
