@@ -5,7 +5,9 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 import java.io.IOException;
 import okhttp3.Call;
@@ -28,9 +30,12 @@ public class MainActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
+    TextView darkSky = findViewById(R.id.darkSkyAttribution);
+    darkSky.setMovementMethod(LinkMovementMethod.getInstance());
+
     String apiKey = getString(R.string.darksky_api_key);
-    Double latitude = 37.8267;
-    Double longitude = -122.4233;
+    Double latitude = 49.2827;
+    Double longitude = -123.1207;
 
     String forecastURL = "https://api.darksky.net/forecast/"
         + apiKey
@@ -90,6 +95,8 @@ public class MainActivity extends AppCompatActivity {
     currentWeather.setPrecipChance(currently.getDouble("precipProbability"));
     currentWeather.setSummary(currently.getString("summary"));
     currentWeather.setTemperature(currently.getDouble("temperature"));
+    currentWeather.setTimeZone("timezone");
+    Log.d(TAG, "time :" + currentWeather.getFormattedTime());
     return currentWeather;
   }
 
